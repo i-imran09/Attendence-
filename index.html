@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Attendance - Login</title>
+  <!-- Firebase v8 CDN links -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="firebase-config.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(-45deg, #2c3e50, #3498db, #2980b9, #1abc9c);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .floating-objects div {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 20s linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+      }
+      100% {
+        transform: translateY(-100vh) rotate(360deg);
+      }
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+      z-index: 1;
+      backdrop-filter: blur(10px);
+      transform-style: preserve-3d;
+    }
+
+    .login-container h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #34495e;
+      font-weight: 500;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    button {
+      width: 100%;
+      padding: 1rem;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .error {
+      color: #e74c3c;
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 500;
+      padding: 0.5rem;
+      border-radius: 5px;
+      background: rgba(231, 76, 60, 0.1);
+    }
+
+    .floating-objects div:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .floating-objects div:nth-child(2) { left: 25%; animation-delay: -5s; }
+    .floating-objects div:nth-child(3) { left: 40%; animation-delay: -10s; }
+    .floating-objects div:nth-child(4) { left: 55%; animation-delay: -15s; }
+    .floating-objects div:nth-child(5) { left: 70%; animation-delay: -20s; }
+    .floating-objects div:nth-child(6) { left: 85%; animation-delay: -25s; }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+      
+      button {
+        padding: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background Elements -->
+  <div class="floating-objects">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <div class="login-container">
+    <h2><i class="fas fa-user-graduate"></i> Attendence Login</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="userType"><i class="fas fa-users-cog"></i> Login As:</label>
+        <select id="userType">
+          <option value="admin">Administrator</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="userId"><i class="fas fa-id-card"></i> User ID:</label>
+        <input type="text" id="userId" required placeholder="Enter your ID">
+      </div>
+
+      <div class="form-group">
+        <label for="password"><i class="fas fa-lock"></i> Password:</label>
+        <input type="password" id="password" required placeholder="*******">
+      </div>
+
+      <button type="submit">Access Portal <i class="fas fa-arrow-right"></i></button>
+    </form>
+    <div id="loginError" class="error"></div>
+  </div>
+  <script>
+    // This code runs after firebase-config.js is loaded, so 'db' is defined.
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const userType = document.getElementById('userType').value;
+      const userId = document.getElementById('userId').value.trim();
+      const password = document.getElementById('password').value.trim();
+      
+      if(userType === 'admin'){
+        if(userId === 'iimraniimmu' && password === '1234'){
+          window.location.href = 'admin.html';
+        } else {
+          document.getElementById('loginError').innerText = 'Invalid admin credentials';
+        }
+      } else if(userType === 'teacher'){
+        // Use the global Firestore instance from firebase-config.js (db)
+        db.collection("teachers").doc(userId).get().then(doc => {
+          if(doc.exists){
+            const teacherData = doc.data();
+            if(teacherData.name === password){
+              // Save teacher info in localStorage and redirect to teacher page
+              localStorage.setItem('teacherId', userId);
+              localStorage.setItem('teacherName', teacherData.name);
+              localStorage.setItem('teacherSection', teacherData.section || '');
+              window.location.href = 'teacher.html';
+            } else {
+              document.getElementById('loginError').innerText = 'Invalid teacher password';
+            }
+          } else {
+            document.getElementById('loginError').innerText = 'Teacher not found';
+          }
+        }).catch(error => {
+          document.getElementById('loginError').innerText = 'Error: ' + error.message;
+        });
+      }
+    });
+  </script>
+</body>
+</html>
